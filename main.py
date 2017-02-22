@@ -1,6 +1,14 @@
+import random
+
+
 class MapReduce:
-    @staticmethod
-    def merge(data):
+    def map(self, data):
+        raise NotImplementedError()
+
+    def reduce(self, key, values):
+        raise NotImplementedError()
+
+    def merge(self, data):
         grouped_data = {}
 
         for chunk in data:
@@ -12,50 +20,104 @@ class MapReduce:
 
         return grouped_data
 
-    @staticmethod
-    def map(data):
-        return [(value, 1) for value in data]
+    def execute(self, data):
+        mapped_chunks = self.map(data)
 
-    @staticmethod
-    def reduce(key, values):
+        grouped_data = self.merge(mapped_chunks)
+
+        results = [self.reduce(key, grouped_data[key]) for key in grouped_data]
+
+        return results
+
+
+class MaxMapReduce(MapReduce):
+    def map(self, data):
+        mapped_chunks = []
+
+        for index, chunk in enumerate(data):
+            mapped_chunks.append([(index, value) for value in chunk])
+
+        return mapped_chunks
+
+    def reduce(self, key, values):
+        return max(values)
+
+    def perform(self, data):
+        result = self.execute(data)
+
+        return max(result)
+
+
+class AverageMapReduce(MapReduce):
+    def map(self, data):
+        mapped_chunks = []
+
+        for index, chunk in enumerate(data):
+            mapped_chunks.append([(index, value) for value in chunk])
+
+        return mapped_chunks
+
+    def reduce(self, key, values):
+        return sum(values), len(values)
+
+    def perform(self, data):
+        result = self.execute(data)
+
+        total_sum = sum([s for s, _ in result])
+        total_num = sum([n for _, n in result])
+
+        return total_sum / total_num
+
+
+class UniqueMapReduce(MapReduce):
+    def map(self, data):
+        mapped_chunks = []
+
+        for chunk in data:
+            mapped_chunks.append([(value, 1) for value in chunk])
+
+        return mapped_chunks
+
+    def reduce(self, key, values):
         return key
 
-    def perform(self):
+    def perform(self, data):
+        result = self.execute(data)
+
+        return result
 
 
-CHUNKS_COUNT = 3
+class UniqueQuantityMapReduce(UniqueMapReduce):
+    def perform(self, data):
+        result = self.execute(data)
+
+        return len(result)
 
 
 def get_chunks(data, chunk_num):
-    division = len(data) / chunk_num
-    return [data[round(division * i):round(division * (i + 1))] for i in range(chunk_num)]
+    n = len(data) / chunk_num
+
+    return [data[round(n * i):round(n * (i + 1))] for i in range(chunk_num)]
 
 
-# #2
-# def reduce(key, values):
-#     return sum(values), len(values)
-
-# def map(value, key):
-#     return value, 1
+def generate_data(n, max_value):
+    return [random.randint(0, max_value) for _ in range(n)]
 
 
-# #1
-# def reduce(key, values):
-#     return max(values)
+def main(chunks_count=3, n=10, max_value=3):
+    data = generate_data(n, max_value)
 
+    print(data)
 
-def main(chunks_count=3):
-    data = [1, 1, 1, 2, 3, 4, 5, 5, 6, 6, 6]
+    chunks = get_chunks(data, chunks_count)
 
-    mapped_chunks = [MapReduce.my_map(chunk) for chunk in get_chunks(data, chunks_count)]
+    map_reduce_services = [MaxMapReduce(), AverageMapReduce(), UniqueMapReduce(), UniqueQuantityMapReduce()]
 
-    grouped_data = MapReduce.merge(mapped_chunks)
+    for service in map_reduce_services:
+        result = service.perform(chunks)
 
-    results = [MapReduce.reduce(key, grouped_data[key]) for key in grouped_data]
-
-    print(results)
-    print()
-    print(len(results))
+        print()
+        print(result)
 
 
 if __name__ == '__main__':
