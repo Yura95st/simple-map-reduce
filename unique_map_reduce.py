@@ -2,6 +2,7 @@ from map_reduce import MapReduce
 
 
 class UniqueMapReduce(MapReduce):
+
     def map(self, data):
         mapped_chunks = []
 

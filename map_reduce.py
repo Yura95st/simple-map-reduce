@@ -1,9 +1,15 @@
-class MapReduce:
-    def map(self, data):
-        raise NotImplementedError()
+from abc import ABCMeta, abstractmethod
 
+
+class MapReduce(metaclass=ABCMeta):
+
+    @abstractmethod
+    def map(self, data):
+        pass
+
+    @abstractmethod
     def reduce(self, key, values):
-        raise NotImplementedError()
+        pass
 
     def merge(self, data):
         grouped_data = {}

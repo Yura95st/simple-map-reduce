@@ -15,16 +15,17 @@ def generate_data(n, max_value):
     return [random.randint(0, max_value) for _ in range(n)]
 
 
-def main(chunks_count=3, n=10, max_value=3):
+def main(chunks_count=10, n=100, max_value=99):
     data = generate_data(n, max_value)
 
     print(data)
 
     chunks = get_chunks(data, chunks_count)
 
-    map_reduce_services = [MaxMapReduce(), AverageMapReduce(), UniqueMapReduce(), UniqueQuantityMapReduce()]
+    services = [MaxMapReduce(), AverageMapReduce(),
+                UniqueMapReduce(), UniqueQuantityMapReduce()]
 
-    for service in map_reduce_services:
+    for service in services:
         result = service.perform(chunks)
 
         print()
